@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useSession } from "../context/SessionContext";
 import { motion } from "framer-motion";
 import PerformanceRadar from "../components/PerformanceRadar";
-import VoiceCoach from "../components/VoiceCoach";
+
 
 function Performance() {
   const { addSession } = useSession();
@@ -178,24 +178,6 @@ function Performance() {
               </ul>
             </div>
           </section>
-
-          {/* ✅ FIXED VOICE COACH (THIS WAS THE ISSUE) */}
-          <VoiceCoach
-            sessionData={{
-              training_load: trainingLoad,
-              heart_rate: heartRate,
-              session_duration: sessionDuration,
-              sleep_hours: sleepHours,
-              fatigue_score: fatigueScore,
-              recovery_score: recoveryScore,
-              previous_injury: previousInjury,
-            }}
-            analysis={{
-              performance,
-              injury_risk: injuryRisk,
-              fatigue_trend: fatigue,
-            }}
-          />
         </>
       )}
 
