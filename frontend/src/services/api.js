@@ -1,4 +1,4 @@
-const BASE_URL = "https://ai-sports-platform.onrender.com";
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 export async function checkPerformance(data) {
   const res = await fetch(`${BASE_URL}/performance`, {
