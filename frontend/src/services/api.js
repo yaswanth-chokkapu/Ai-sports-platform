@@ -1,4 +1,4 @@
-const BASE_URL = "http://127.0.0.1:8000";
+const BASE_URL = "https://ai-sports-platform.onrender.com";
 
 export async function checkPerformance(data) {
   const res = await fetch(`${BASE_URL}/performance`, {
