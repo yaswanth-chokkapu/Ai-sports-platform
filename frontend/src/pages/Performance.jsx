@@ -6,6 +6,7 @@ import PerformanceRadar from "../components/PerformanceRadar";
 
 function Performance() {
   const { addSession } = useSession();
+  const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
   /* =========================
      INPUT STATES
@@ -32,7 +33,7 @@ function Performance() {
      ========================= */
   async function checkPerformance() {
     try {
-      const response = await fetch("https://ai-sports-platform.onrender.com/session", {
+      const response = await fetch(`${BASE_URL}/session`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
