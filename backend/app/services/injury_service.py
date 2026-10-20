@@ -11,10 +11,17 @@ def predict_injury(data):
         int(data.previous_injury)
     ]]
 
-    prediction = injury_model.model.predict(features)[0]
-    confidence = max(injury_model.model.predict_proba(features)[0]) * 100
+    prediction = None
+    confidence = 0.0
 
-    # 🔥 Rule-based overrides (PRODUCT LOGIC)
+    if injury_model.model is not None:
+        try:
+            prediction = injury_model.model.predict(features)[0]
+            confidence = max(injury_model.model.predict_proba(features)[0]) * 100
+        except Exception as e:
+            print(f"[WARN] Injury ML model inference failed: {e}")
+
+    # Rule-based overrides (PRODUCT LOGIC)
     risk_level = "Low"
 
     if (
@@ -31,11 +38,16 @@ def predict_injury(data):
     ):
         risk_level = "High"
 
-    # ML can still upgrade risk
-    if prediction == 1 and confidence > 60:
+    # ML can still upgrade risk - handles both string classes ("HIGH") and legacy integer flags (1)
+    is_high_prediction = (
+        isinstance(prediction, str) and prediction.strip().upper() == "HIGH"
+    ) or prediction == 1
+
+    if is_high_prediction and confidence > 60:
         risk_level = "High"
 
     return {
         "risk_level": risk_level,
         "confidence": round(confidence, 2)
     }
+
