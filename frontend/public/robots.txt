@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ai-sports-platform.vercel.app/sitemap.xml
