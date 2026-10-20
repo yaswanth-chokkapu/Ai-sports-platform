@@ -4,6 +4,7 @@ import { LayoutDashboard, CheckCircle2 } from "lucide-react";
 import SummaryCards from "../components/SummaryCards";
 import WeeklyPerformanceChart from "../components/WeeklyPerformanceChart";
 import ActionCards from "../components/ActionCards";
+import { API_BASE_URL } from "../config/api";
 
 function Home() {
   const { sessions } = useSession();
@@ -11,16 +12,13 @@ function Home() {
 
   const [engineStatus, setEngineStatus] = useState("checking"); // 'checking' | 'connected' | 'offline'
 
-  const BASE_URL =
-    import.meta.env.VITE_API_URL ||
-    (import.meta.env.DEV ? "http://localhost:8000" : "");
-
   useEffect(() => {
     let active = true;
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2500);
+    // Allow up to 15s for Render cold-starts before falling back to offline badge
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-    fetch(`${BASE_URL}/`, { signal: controller.signal })
+    fetch(`${API_BASE_URL}/`, { signal: controller.signal })
       .then((res) => {
         if (!active) return;
         clearTimeout(timeoutId);
@@ -41,7 +39,7 @@ function Home() {
       clearTimeout(timeoutId);
       controller.abort();
     };
-  }, [BASE_URL]);
+  }, []);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">

@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useSession } from "../context/SessionContext";
-import { Gauge, Sliders, Sparkles, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import { Gauge, Sliders, Sparkles, AlertCircle, CheckCircle2, Loader2, RefreshCw } from "lucide-react";
 import PerformanceRadar from "../components/PerformanceRadar";
+import { API_BASE_URL } from "../config/api";
 
 function cleanEmojiText(text) {
   if (typeof text !== "string") return "";
@@ -13,11 +14,6 @@ function cleanEmojiText(text) {
 
 function Performance() {
   const { addSession } = useSession();
-  const BASE_URL =
-    import.meta.env.VITE_API_URL ||
-    (import.meta.env.DEV ? "http://localhost:8000" : "");
-
-
 
   /* =========================
      INPUT STATES
@@ -39,14 +35,24 @@ function Performance() {
   const [suggestions, setSuggestions] = useState([]);
   const [analyzed, setAnalyzed] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loadingStage, setLoadingStage] = useState("Evaluating Biometrics...");
   const [error, setError] = useState(null);
 
+  const coldStartTimerRef = useRef(null);
+
   /* =========================
-     BACKEND CALL WITH FALLBACK
+     BACKEND CALL WITH COLD-START SUPPORT
      ========================= */
   async function checkPerformance() {
     setLoading(true);
     setError(null);
+    setLoadingStage("Evaluating Biometrics...");
+
+    // If request takes longer than 3.5s, update message to inform user of Render container wake-up
+    if (coldStartTimerRef.current) clearTimeout(coldStartTimerRef.current);
+    coldStartTimerRef.current = setTimeout(() => {
+      setLoadingStage("Waking analytics engine (Render cold start may take ~30s)...");
+    }, 3500);
 
     const payload = {
       training_load: trainingLoad,
@@ -58,18 +64,38 @@ function Performance() {
       previous_injury: previousInjury,
     };
 
-    try {
-      const response = await fetch(`${BASE_URL}/session`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+    let lastError = null;
+    let data = null;
 
-      if (!response.ok) {
-        throw new Error(`Server returned HTTP ${response.status}`);
+    try {
+      // Bounded retry (max 2 attempts) to absorb transient 502/503 during Render spin-up
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        try {
+          const response = await fetch(`${API_BASE_URL}/session`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+
+          if (!response.ok) {
+            throw new Error(`Server returned HTTP ${response.status}`);
+          }
+
+          data = await response.json();
+          break;
+        } catch (fetchErr) {
+          lastError = fetchErr;
+          if (attempt === 1) {
+            setLoadingStage("Engine waking up, retrying connection (attempt 2 of 2)...");
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+          }
+        }
       }
 
-      const data = await response.json();
+      if (!data || !data.performance || typeof data.performance.overall_score !== "number") {
+        throw lastError || new Error("Invalid or empty response received from analytics engine.");
+      }
+
       const sanitizedSuggestions = Array.isArray(data.suggestions)
         ? data.suggestions.map(cleanEmojiText)
         : [];
@@ -86,15 +112,21 @@ function Performance() {
         time: now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         timestamp: now.getTime(),
         overall_score: data.performance.overall_score,
-        fatigue: data.fatigue_trend.average_fatigue,
-        injury_risk: data.injury_risk.risk_level,
+        fatigue: data.fatigue_trend?.average_fatigue ?? data.fatigue_trend?.history?.[0] ?? fatigueScore,
+        injury_risk: data.injury_risk?.risk_level ?? "Low",
         metrics: data.performance.metrics,
         suggestions: sanitizedSuggestions,
       });
     } catch (err) {
       console.error("Backend error:", err);
-      setError(`Unable to connect to analytics engine (${err.message}). Ensure backend server is running.`);
+      setError(
+        `Unable to connect to analytics engine (${err.message}). If the Render instance was sleeping, it may still be finishing initialization. Please try again.`
+      );
     } finally {
+      if (coldStartTimerRef.current) {
+        clearTimeout(coldStartTimerRef.current);
+        coldStartTimerRef.current = null;
+      }
       setLoading(false);
     }
   }
@@ -222,12 +254,12 @@ function Performance() {
           <button
             onClick={checkPerformance}
             disabled={loading}
-            className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm shadow-xs transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm shadow-xs transition-all disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
           >
             {loading ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Evaluating Biometrics...</span>
+                <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+                <span>{loadingStage}</span>
               </>
             ) : (
               <span>Check Performance</span>
@@ -236,12 +268,23 @@ function Performance() {
         </div>
 
         {error && (
-          <div className="mt-4 p-4 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 flex items-start gap-2.5 text-sm text-red-700 dark:text-red-400">
-            <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
-            <div>
-              <p className="font-semibold m-0">Diagnostics Connection Error</p>
-              <p className="text-xs mt-0.5 m-0">{error}</p>
+          <div className="mt-4 p-4 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm text-red-700 dark:text-red-400">
+            <div className="flex items-start gap-2.5">
+              <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+              <div>
+                <p className="font-semibold m-0">Diagnostics Connection Error</p>
+                <p className="text-xs mt-0.5 m-0">{error}</p>
+              </div>
             </div>
+            <button
+              type="button"
+              onClick={checkPerformance}
+              disabled={loading}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md bg-red-100 hover:bg-red-200 dark:bg-red-900/50 dark:hover:bg-red-900/80 text-red-800 dark:text-red-200 transition-colors shrink-0 self-start sm:self-auto cursor-pointer"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Retry</span>
+            </button>
           </div>
         )}
       </section>
