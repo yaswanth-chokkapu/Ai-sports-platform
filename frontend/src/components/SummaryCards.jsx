@@ -1,8 +1,12 @@
 import { useSession } from "../context/SessionContext";
 import { Activity, ShieldCheck, ShieldAlert, BatteryMedium } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
+
+const MotionDiv = motion.div;
 
 function SummaryCards() {
   const { sessions } = useSession();
+  const shouldReduceMotion = useReducedMotion();
 
   const hasSessions = Array.isArray(sessions) && sessions.length > 0;
 
@@ -109,9 +113,17 @@ function SummaryCards() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
       {cards.map((card, i) => (
-        <div
+        <MotionDiv
           key={i}
-          className="bg-white dark:bg-[#132238] border border-slate-200/90 dark:border-[#223854] rounded-xl p-6 shadow-xs hover:border-slate-300 dark:hover:border-[#334d70] transition-colors flex flex-col justify-between"
+          initial={shouldReduceMotion ? false : { opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            duration: 0.22,
+            delay: shouldReduceMotion ? 0 : i * 0.05,
+            ease: "easeOut",
+          }}
+          whileHover={shouldReduceMotion ? {} : { y: -1 }}
+          className="bg-white dark:bg-[#132238] border border-slate-200/90 dark:border-[#223854] rounded-xl p-6 shadow-xs hover:border-slate-300 dark:hover:border-[#334d70] hover:shadow-sm transition-colors duration-200 flex flex-col justify-between"
         >
           <div>
             <div className="flex items-center justify-between gap-2">
@@ -127,7 +139,7 @@ function SummaryCards() {
             </div>
 
             <div className="mt-4 flex items-baseline gap-1.5">
-              <span className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white font-mono">
+              <span className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white font-mono tabular-nums">
                 {card.value}
               </span>
               {card.unit && (
@@ -139,7 +151,7 @@ function SummaryCards() {
           <p className="mt-3 text-xs text-slate-500 dark:text-slate-400 font-medium">
             {card.subtext}
           </p>
-        </div>
+        </MotionDiv>
       ))}
     </div>
   );

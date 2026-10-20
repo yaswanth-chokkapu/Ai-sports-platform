@@ -11,6 +11,7 @@ import {
   Plus,
 } from "lucide-react";
 import FatigueChart from "../components/FatigueChart";
+import { getLatestSessions } from "../utils/sessionUtils";
 
 function cleanEmojiText(text) {
   if (typeof text !== "string") return "";
@@ -121,6 +122,20 @@ function Injury() {
             fatigueHistory.length
         )
       : null;
+
+  // Authoritative latest 7 sessions for the longitudinal chart
+  const latestSevenSessions = getLatestSessions(sessions, 7);
+  const latestFatigueHistory = latestSevenSessions.map((s) => ({
+    sessionNumber: s.sessionNumber,
+    date: s.date,
+    time: s.time,
+    fatigue:
+      typeof s.fatigue === "number"
+        ? s.fatigue
+        : typeof s.fatigue_score === "number"
+        ? s.fatigue_score
+        : null,
+  }));
 
   const riskBadge = getRiskBadge(latest.injury_risk);
   const rawSuggestions = Array.isArray(latest.suggestions) ? latest.suggestions : [];
@@ -266,21 +281,27 @@ function Injury() {
               </h2>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              Workload strain accumulation per recorded training session
+              {latestFatigueHistory.length > 0
+                ? `Workload strain accumulation across latest ${latestFatigueHistory.length} recorded training ${
+                    latestFatigueHistory.length === 1 ? "session" : "sessions"
+                  }`
+                : "Workload strain accumulation per recorded training session"}
             </p>
           </div>
 
-          <span className="text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-[#1B2E4B] border border-transparent dark:border-[#223854] px-2.5 py-1 rounded-md self-start sm:self-auto font-mono">
-            Scale: 0 – 100
-          </span>
+          {latestFatigueHistory.length > 0 && (
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-[#1B2E4B] border border-transparent dark:border-[#223854] px-2.5 py-1 rounded-md self-start sm:self-auto font-mono">
+              Scale: 0 – 100
+            </span>
+          )}
         </div>
 
-        {fatigueHistory.length >= 2 ? (
-          <FatigueChart history={fatigueHistory} />
+        {latestFatigueHistory.length > 0 ? (
+          <FatigueChart history={latestFatigueHistory} />
         ) : (
           <div className="rounded-xl border border-dashed border-slate-300 dark:border-[#223854] bg-slate-50/70 dark:bg-[#1B2E4B]/40 p-8 text-center flex flex-col items-center justify-center min-h-[220px]">
             <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm m-0">
-              Complete at least two training sessions to unlock longitudinal fatigue trend analysis and accumulation rates.
+              Evaluate your first training session to unlock longitudinal fatigue trend analysis and accumulation rates.
             </p>
           </div>
         )}

@@ -2,6 +2,8 @@ import { useSession } from "../context/SessionContext";
 import { useTheme } from "../context/ThemeContext";
 import { Link } from "react-router-dom";
 import { TrendingUp, BarChart2, Plus } from "lucide-react";
+import { useReducedMotion } from "framer-motion";
+import { getLatestSessions } from "../utils/sessionUtils";
 import {
   LineChart,
   Line,
@@ -17,9 +19,12 @@ function CustomTooltip({ active, payload }) {
     const data = payload[0].payload;
     return (
       <div className="bg-slate-900 dark:bg-[#1B2E4B] border border-slate-800 dark:border-[#223854] text-white px-3.5 py-2.5 rounded-lg shadow-lg text-xs">
-        <p className="font-semibold text-slate-200">Session {data.sessionNumber}</p>
-        <p className="text-[11px] text-slate-400 mt-0.5">{data.fullDate}</p>
-        <p className="text-sm font-bold text-blue-400 mt-1">
+        <div className="flex items-center justify-between gap-3">
+          <p className="font-semibold text-slate-200">Session {data.sessionNumber}</p>
+          {data.date && <span className="text-[11px] text-slate-400 font-medium">{data.date}</span>}
+        </div>
+        {data.time && <p className="text-[11px] text-slate-400 mt-0.5">{data.time}</p>}
+        <p className="text-sm font-bold text-blue-400 mt-1.5">
           Overall Score: {payload[0].value} <span className="text-slate-400 font-normal">/ 100</span>
         </p>
       </div>
@@ -31,20 +36,24 @@ function CustomTooltip({ active, payload }) {
 function WeeklyPerformanceChart() {
   const { sessions } = useSession();
   const { isDark } = useTheme();
+  const shouldReduceMotion = useReducedMotion();
 
-  const hasData = Array.isArray(sessions) && sessions.length > 0;
+  const latestSessions = getLatestSessions(sessions, 7);
+  const hasData = latestSessions.length > 0;
 
   const chartData = hasData
-    ? sessions.map((s, index) => {
+    ? latestSessions.map((s) => {
         const fullDateStr = s.date
           ? `${s.date}${s.time ? ` at ${s.time}` : ""}`
-          : `Session ${index + 1}`;
+          : `Session ${s.sessionNumber}`;
 
         return {
-          day: `S${index + 1}`,
+          day: `S${s.sessionNumber}`,
           fullDate: fullDateStr,
-          sessionNumber: index + 1,
-          performance: typeof s.overall_score === "number" ? s.overall_score : 0,
+          sessionNumber: s.sessionNumber,
+          date: s.date,
+          time: s.time,
+          performance: s.overall_score,
         };
       })
     : [];
@@ -62,7 +71,11 @@ function WeeklyPerformanceChart() {
             </h2>
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Historical overall score trajectory across recorded training sessions
+            {hasData
+              ? `Historical overall score trajectory across latest ${chartData.length} recorded training ${
+                  chartData.length === 1 ? "session" : "sessions"
+                }`
+              : "Historical overall score trajectory across recorded training sessions"}
           </p>
         </div>
 
@@ -107,7 +120,7 @@ function WeeklyPerformanceChart() {
                 fontSize={11}
                 tickLine={false}
                 axisLine={{ stroke: isDark ? "#223854" : "#e2e8f0" }}
-                interval={chartData.length > 15 ? Math.floor(chartData.length / 10) : 0}
+                interval={0}
               />
               <YAxis
                 domain={[0, 100]}
@@ -117,13 +130,16 @@ function WeeklyPerformanceChart() {
                 axisLine={false}
                 ticks={[0, 25, 50, 75, 100]}
               />
-              <Tooltip content={<CustomTooltip />} />
+              <Tooltip content={<CustomTooltip />} isAnimationActive={false} />
               <Line
                 type="monotone"
                 dataKey="performance"
                 stroke={isDark ? "#3b82f6" : "#2563eb"}
                 strokeWidth={2.5}
-                dot={chartData.length > 15 ? false : {
+                isAnimationActive={!shouldReduceMotion}
+                animationDuration={300}
+                animationEasing="ease-out"
+                dot={{
                   r: 4,
                   fill: isDark ? "#3b82f6" : "#2563eb",
                   stroke: isDark ? "#132238" : "#ffffff",
