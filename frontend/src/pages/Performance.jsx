@@ -3,6 +3,14 @@ import { useSession } from "../context/SessionContext";
 import { Gauge, Sliders, Sparkles, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import PerformanceRadar from "../components/PerformanceRadar";
 
+function cleanEmojiText(text) {
+  if (typeof text !== "string") return "";
+  return text
+    .replace(/\p{Extended_Pictographic}|\p{Emoji_Presentation}/gu, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
 function Performance() {
   const { addSession } = useSession();
   const BASE_URL =
@@ -62,20 +70,26 @@ function Performance() {
       }
 
       const data = await response.json();
+      const sanitizedSuggestions = Array.isArray(data.suggestions)
+        ? data.suggestions.map(cleanEmojiText)
+        : [];
 
       setPerformance(data.performance);
       setInjuryRisk(data.injury_risk);
       setFatigue(data.fatigue_trend);
-      setSuggestions(data.suggestions);
+      setSuggestions(sanitizedSuggestions);
       setAnalyzed(true);
 
+      const now = new Date();
       addSession({
-        date: new Date().toLocaleDateString(),
+        date: now.toLocaleDateString(undefined, { month: "short", day: "numeric" }),
+        time: now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        timestamp: now.getTime(),
         overall_score: data.performance.overall_score,
         fatigue: data.fatigue_trend.average_fatigue,
         injury_risk: data.injury_risk.risk_level,
         metrics: data.performance.metrics,
-        suggestions: data.suggestions,
+        suggestions: sanitizedSuggestions,
       });
     } catch (err) {
       console.error("Backend error:", err);
@@ -146,25 +160,25 @@ function Performance() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Header */}
-      <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-6 border-b border-slate-200">
+      <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-6 border-b border-slate-200 dark:border-[#223854]">
         <div>
           <div className="flex items-center gap-2.5">
-            <Gauge className="w-6 h-6 text-blue-600" />
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+            <Gauge className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
               Performance Diagnostics
             </h1>
           </div>
-          <p className="mt-1.5 text-sm sm:text-base text-slate-500">
+          <p className="mt-1.5 text-sm sm:text-base text-slate-500 dark:text-slate-400">
             Calibrate workout inputs to calculate your acute overall performance and strain index.
           </p>
         </div>
       </header>
 
       {/* Input Form Section */}
-      <section className="bg-white border border-slate-200/90 rounded-xl p-6 sm:p-8 shadow-xs">
-        <div className="flex items-center gap-2 mb-6 pb-4 border-b border-slate-100">
-          <Sliders className="w-4 h-4 text-blue-600" />
-          <h2 className="text-base font-bold text-slate-900 tracking-tight m-0">
+      <section className="bg-white dark:bg-[#132238] border border-slate-200/90 dark:border-[#223854] rounded-xl p-6 sm:p-8 shadow-xs transition-colors">
+        <div className="flex items-center gap-2 mb-6 pb-4 border-b border-slate-100 dark:border-[#1B2E4B]">
+          <Sliders className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+          <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-tight m-0">
             Session Parameters
           </h2>
         </div>
@@ -173,11 +187,11 @@ function Performance() {
           {sliderFields.map((f, i) => (
             <div key={i} className="flex flex-col space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-600">
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300">
                   {f.label}
                 </label>
-                <span className="text-sm font-bold text-blue-600 font-mono bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
-                  {f.val} <span className="text-xs text-slate-400 font-normal">{f.unit}</span>
+                <span className="text-sm font-bold text-blue-600 dark:text-blue-400 font-mono bg-blue-50 dark:bg-blue-950/50 px-2 py-0.5 rounded border border-blue-100 dark:border-blue-900/60">
+                  {f.val} <span className="text-xs text-slate-400 dark:text-slate-500 font-normal">{f.unit}</span>
                 </span>
               </div>
               <input
@@ -187,20 +201,20 @@ function Performance() {
                 step={f.step || 1}
                 value={f.val}
                 onChange={(e) => f.set(+e.target.value)}
-                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600 focus:outline-none"
+                className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-600 dark:accent-blue-500 focus:outline-none"
               />
-              <span className="text-[11px] text-slate-400 font-medium">{f.hint}</span>
+              <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">{f.hint}</span>
             </div>
           ))}
         </div>
 
-        <div className="mt-6 pt-5 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <label className="flex items-center gap-2.5 text-sm font-medium text-slate-700 cursor-pointer select-none">
+        <div className="mt-6 pt-5 border-t border-slate-100 dark:border-[#1B2E4B] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <label className="flex items-center gap-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 cursor-pointer select-none">
             <input
               type="checkbox"
               checked={previousInjury}
               onChange={() => setPreviousInjury(!previousInjury)}
-              className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+              className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500 bg-white dark:bg-[#1B2E4B]"
             />
             <span>History of previous musculoskeletal injury</span>
           </label>
@@ -222,7 +236,7 @@ function Performance() {
         </div>
 
         {error && (
-          <div className="mt-4 p-4 rounded-lg bg-red-50 border border-red-200 flex items-start gap-2.5 text-sm text-red-700">
+          <div className="mt-4 p-4 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 flex items-start gap-2.5 text-sm text-red-700 dark:text-red-400">
             <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
             <div>
               <p className="font-semibold m-0">Diagnostics Connection Error</p>
@@ -236,18 +250,18 @@ function Performance() {
       {analyzed && performance && (
         <div className="space-y-8 animate-fade-in">
           {/* Overall Performance Banner */}
-          <div className="bg-white border border-slate-200/90 rounded-xl p-6 sm:p-8 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="bg-white dark:bg-[#132238] border border-slate-200/90 dark:border-[#223854] rounded-xl p-6 sm:p-8 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 transition-colors">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   Analysis Complete
                 </span>
               </div>
-              <h2 className="text-lg font-bold text-slate-900 tracking-tight m-0">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight m-0">
                 Overall Athletic Score
               </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                 Composite index derived from strength, endurance, rest, and fatigue balance.
               </p>
             </div>
@@ -255,13 +269,13 @@ function Performance() {
             <div className="flex flex-wrap items-center gap-4">
               {injuryRisk && (
                 <div className="flex flex-col items-end">
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Injury Risk</span>
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Injury Risk</span>
                   <span className={`text-sm font-bold px-2 py-0.5 rounded border ${
                     injuryRisk.risk_level === 'Low'
-                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                      ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/60'
                       : injuryRisk.risk_level === 'Medium'
-                      ? 'bg-amber-50 text-amber-700 border-amber-200'
-                      : 'bg-red-50 text-red-700 border-red-200'
+                      ? 'bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800/60'
+                      : 'bg-red-50 dark:bg-red-950/50 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800/60'
                   }`}>
                     {injuryRisk.risk_level}
                   </span>
@@ -269,23 +283,23 @@ function Performance() {
               )}
               {fatigue && (
                 <div className="flex flex-col items-end">
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Rolling Fatigue</span>
-                  <span className="text-sm font-bold text-slate-800 font-mono">
-                    {fatigue.average_fatigue} <span className="text-xs text-slate-400 font-normal">/ 100</span>
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Rolling Fatigue</span>
+                  <span className="text-sm font-bold text-slate-800 dark:text-slate-200 font-mono">
+                    {fatigue.average_fatigue} <span className="text-xs text-slate-400 dark:text-slate-500 font-normal">/ 100</span>
                   </span>
                 </div>
               )}
-              <div className="flex items-baseline gap-2 bg-slate-50 px-6 py-3 rounded-xl border border-slate-200">
-                <span className="text-4xl font-extrabold text-blue-600 font-mono tracking-tight">
+              <div className="flex items-baseline gap-2 bg-slate-50 dark:bg-[#1B2E4B] px-6 py-3 rounded-xl border border-slate-200 dark:border-[#223854]">
+                <span className="text-4xl font-extrabold text-blue-600 dark:text-blue-400 font-mono tracking-tight">
                   {performance.overall_score}
                 </span>
-                <span className="text-sm font-semibold text-slate-400">/ 100</span>
+                <span className="text-sm font-semibold text-slate-400 dark:text-slate-500">/ 100</span>
               </div>
             </div>
           </div>
 
           {/* Performance Radar Matrix */}
-          <div className="bg-white border border-slate-200/90 rounded-xl p-6 sm:p-8 shadow-xs">
+          <div className="bg-white dark:bg-[#132238] border border-slate-200/90 dark:border-[#223854] rounded-xl p-6 sm:p-8 shadow-xs transition-colors">
             <PerformanceRadar metrics={performance.metrics} />
           </div>
 
@@ -294,16 +308,16 @@ function Performance() {
             {Object.entries(performance.metrics).map(([key, value]) => (
               <div
                 key={key}
-                className="bg-white border border-slate-200/90 rounded-xl p-5 shadow-xs flex flex-col justify-between"
+                className="bg-white dark:bg-[#132238] border border-slate-200/90 dark:border-[#223854] rounded-xl p-5 shadow-xs flex flex-col justify-between transition-colors"
               >
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   {key}
                 </span>
                 <div className="mt-3 flex items-baseline gap-1">
-                  <span className="text-2xl font-bold text-slate-900 font-mono tracking-tight">
+                  <span className="text-2xl font-bold text-slate-900 dark:text-white font-mono tracking-tight">
                     {value}
                   </span>
-                  <span className="text-xs text-slate-400">/ 100</span>
+                  <span className="text-xs text-slate-400 dark:text-slate-500">/ 100</span>
                 </div>
               </div>
             ))}
@@ -311,10 +325,10 @@ function Performance() {
 
           {/* AI Coach Recommendations */}
           {suggestions && suggestions.length > 0 && (
-            <div className="bg-white border border-slate-200/90 rounded-xl p-6 sm:p-8 shadow-xs">
-              <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
-                <Sparkles className="w-4 h-4 text-blue-600" />
-                <h3 className="text-base font-bold text-slate-900 tracking-tight m-0">
+            <div className="bg-white dark:bg-[#132238] border border-slate-200/90 dark:border-[#223854] rounded-xl p-6 sm:p-8 shadow-xs transition-colors">
+              <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100 dark:border-[#1B2E4B]">
+                <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                <h3 className="text-base font-bold text-slate-900 dark:text-white tracking-tight m-0">
                   Coach Telemetry Insights
                 </h3>
               </div>
@@ -323,9 +337,9 @@ function Performance() {
                 {suggestions.map((suggestion, index) => (
                   <li
                     key={index}
-                    className="p-3.5 rounded-lg bg-slate-50 border border-slate-200/70 text-sm text-slate-700 font-medium flex items-center gap-2.5"
+                    className="p-3.5 rounded-lg bg-slate-50 dark:bg-[#162842] border border-slate-200/70 dark:border-[#223854] text-sm text-slate-700 dark:text-slate-300 font-medium flex items-center gap-2.5"
                   >
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600 shrink-0"></span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-400 shrink-0"></span>
                     <span>{suggestion}</span>
                   </li>
                 ))}

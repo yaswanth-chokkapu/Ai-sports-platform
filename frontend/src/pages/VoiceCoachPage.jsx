@@ -335,15 +335,15 @@ function VoiceCoachContent() {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Header */}
-      <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-6 border-b border-slate-200">
+      <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-6 border-b border-slate-200 dark:border-[#223854]">
         <div>
           <div className="flex items-center gap-2.5">
-            <Bot className="w-6 h-6 text-blue-600" />
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+            <Bot className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
               AI Voice Coach
             </h1>
           </div>
-          <p className="mt-1.5 text-sm sm:text-base text-slate-500">
+          <p className="mt-1.5 text-sm sm:text-base text-slate-500 dark:text-slate-400">
             Hands-free spoken analytics, recovery readiness, and personalized athletic insights.
           </p>
         </div>
@@ -351,30 +351,30 @@ function VoiceCoachContent() {
 
       {/* Current Context Card */}
       {latest && (
-        <section className="bg-white border border-slate-200/90 rounded-xl p-5 shadow-xs">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
+        <section className="bg-white dark:bg-[#132238] border border-slate-200/90 dark:border-[#223854] rounded-xl p-5 shadow-xs transition-colors">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">
             Active Athlete Telemetry
           </h2>
           <div className="grid grid-cols-3 gap-4">
-            <div className="p-3 rounded-lg bg-slate-50 border border-slate-100">
-              <span className="text-xs text-slate-500 font-medium block">Performance</span>
-              <span className="text-lg font-bold text-slate-900 font-mono">{latest.overall_score ?? "—"}</span>
+            <div className="p-3 rounded-lg bg-slate-50 dark:bg-[#1B2E4B] border border-slate-100 dark:border-[#223854]">
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium block">Performance</span>
+              <span className="text-lg font-bold text-slate-900 dark:text-white font-mono">{latest.overall_score ?? "—"}</span>
             </div>
-            <div className="p-3 rounded-lg bg-slate-50 border border-slate-100">
-              <span className="text-xs text-slate-500 font-medium block">Injury Risk</span>
-              <span className="text-lg font-bold text-slate-900">{latest.injury_risk ?? "—"}</span>
+            <div className="p-3 rounded-lg bg-slate-50 dark:bg-[#1B2E4B] border border-slate-100 dark:border-[#223854]">
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium block">Injury Risk</span>
+              <span className="text-lg font-bold text-slate-900 dark:text-white">{latest.injury_risk ?? "—"}</span>
             </div>
-            <div className="p-3 rounded-lg bg-slate-50 border border-slate-100">
-              <span className="text-xs text-slate-500 font-medium block">Avg Fatigue</span>
-              <span className="text-lg font-bold text-slate-900 font-mono">{latest.fatigue ?? "—"}</span>
+            <div className="p-3 rounded-lg bg-slate-50 dark:bg-[#1B2E4B] border border-slate-100 dark:border-[#223854]">
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium block">Avg Fatigue</span>
+              <span className="text-lg font-bold text-slate-900 dark:text-white font-mono">{latest.fatigue ?? "—"}</span>
             </div>
           </div>
         </section>
       )}
 
       {/* Quick Prompts */}
-      <section className="bg-white border border-slate-200/90 rounded-xl p-5 shadow-xs">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
+      <section className="bg-white dark:bg-[#132238] border border-slate-200/90 dark:border-[#223854] rounded-xl p-5 shadow-xs transition-colors">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">
           Quick Inquiries
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
@@ -383,7 +383,7 @@ function VoiceCoachContent() {
               key={i}
               type="button"
               onClick={() => submitMessage(q)}
-              className="text-left p-3 rounded-lg bg-slate-50 border border-slate-200 hover:border-blue-400 hover:bg-blue-50/50 text-xs font-medium text-slate-700 hover:text-blue-700 transition-all cursor-pointer"
+              className="text-left p-3 rounded-lg bg-slate-50 dark:bg-[#1B2E4B] border border-slate-200 dark:border-[#223854] hover:border-blue-400 dark:hover:border-blue-500/60 hover:bg-blue-50/50 dark:hover:bg-blue-950/40 text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-blue-700 dark:hover:text-blue-400 transition-all cursor-pointer"
             >
               {q}
             </button>
@@ -392,28 +392,32 @@ function VoiceCoachContent() {
       </section>
 
       {/* Microphone Interaction Panel */}
-      <section className="bg-white border border-slate-200/90 rounded-xl p-8 shadow-xs text-center">
+      <section className="bg-white dark:bg-[#132238] border border-slate-200/90 dark:border-[#223854] rounded-xl p-8 shadow-xs text-center transition-colors">
         <div className="flex flex-col items-center justify-center">
           {/* Mic Button */}
-          <div className="relative mb-4 flex items-center justify-center">
+          <div className="relative mb-5 flex items-center justify-center">
+            {/* Idle subtle glow ring */}
+            {!isListening && isSupported && (
+              <span className="absolute w-28 h-28 rounded-full bg-blue-500/8 border border-blue-400/15 dark:bg-blue-500/10 dark:border-blue-500/20 animate-pulse"></span>
+            )}
             {isListening && (
-              <span className="absolute w-24 h-24 rounded-full bg-blue-500/20 animate-ping"></span>
+              <span className="absolute w-28 h-28 rounded-full bg-red-500/20 animate-ping"></span>
             )}
             <button
               type="button"
               onClick={toggleVoiceInput}
               disabled={!isSupported}
               title={!isSupported ? "Voice recognition not supported in this browser" : isListening ? "Stop listening" : "Start speaking"}
-              className={`w-18 h-18 rounded-full flex items-center justify-center text-white transition-all shadow-sm cursor-pointer z-10 disabled:opacity-40 disabled:cursor-not-allowed ${
+              className={`w-20 h-20 rounded-full flex items-center justify-center text-white transition-all shadow-lg cursor-pointer z-10 disabled:opacity-40 disabled:cursor-not-allowed ${
                 isListening
-                  ? "bg-red-600 hover:bg-red-700"
-                  : "bg-blue-600 hover:bg-blue-700"
+                  ? "bg-red-600 hover:bg-red-700 shadow-red-500/30"
+                  : "bg-blue-600 hover:bg-blue-700 shadow-blue-500/30"
               }`}
             >
               {isListening ? (
-                <Square className="w-6 h-6" />
+                <Square className="w-7 h-7" />
               ) : (
-                <Mic className="w-7 h-7" />
+                <Mic className="w-8 h-8" />
               )}
             </button>
           </div>
@@ -424,17 +428,17 @@ function VoiceCoachContent() {
               <p
                 className={`text-xs font-medium m-0 flex items-center gap-1.5 ${
                   micState === "error"
-                    ? "text-red-600"
+                    ? "text-red-600 dark:text-red-400"
                     : isListening
-                    ? "text-blue-600"
-                    : "text-slate-600"
+                    ? "text-blue-600 dark:text-blue-400"
+                    : "text-slate-600 dark:text-slate-300"
                 }`}
               >
                 {micState === "error" && <AlertCircle className="w-3.5 h-3.5 shrink-0" />}
                 <span>{micMsg}</span>
               </p>
             ) : (
-              <p className="text-xs text-slate-400 font-medium m-0">
+              <p className="text-xs text-slate-400 dark:text-slate-500 font-medium m-0">
                 {isSupported ? "Click the microphone to start speaking" : "Speech recognition unavailable"}
               </p>
             )}
@@ -442,9 +446,9 @@ function VoiceCoachContent() {
 
           {/* Divider */}
           <div className="w-full flex items-center gap-3 my-5">
-            <div className="flex-1 h-px bg-slate-200"></div>
-            <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">or type query</span>
-            <div className="flex-1 h-px bg-slate-200"></div>
+            <div className="flex-1 h-px bg-slate-200 dark:bg-[#223854]"></div>
+            <span className="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider">or type query</span>
+            <div className="flex-1 h-px bg-slate-200 dark:bg-[#223854]"></div>
           </div>
 
           {/* Text Input Fallback */}
@@ -460,7 +464,7 @@ function VoiceCoachContent() {
               value={textInput}
               onChange={(e) => setTextInput(e.target.value)}
               placeholder="Ask about performance, fatigue, or recovery..."
-              className="flex-1 px-4 py-2.5 rounded-lg border border-slate-300 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+              className="flex-1 px-4 py-2.5 rounded-lg border border-slate-300 dark:border-[#223854] text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-[#1B2E4B]"
             />
             <button
               type="submit"
@@ -476,9 +480,9 @@ function VoiceCoachContent() {
 
       {/* Conversation History */}
       {messages.length > 0 && (
-        <section className="bg-white border border-slate-200/90 rounded-xl p-6 shadow-xs">
-          <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
-            <h2 className="text-sm font-bold text-slate-900 tracking-tight m-0">
+        <section className="bg-white dark:bg-[#132238] border border-slate-200/90 dark:border-[#223854] rounded-xl p-6 shadow-xs transition-colors">
+          <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-100 dark:border-[#1B2E4B]">
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight m-0">
               Dialogue Transcript
             </h2>
             <button
@@ -491,7 +495,7 @@ function VoiceCoachContent() {
                 setMicMsg("");
                 setMicState("idle");
               }}
-              className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-red-600 transition-colors cursor-pointer bg-transparent border-0 p-0"
+              className="inline-flex items-center gap-1 text-xs text-slate-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 transition-colors cursor-pointer bg-transparent border-0 p-0"
             >
               <Trash2 className="w-3.5 h-3.5" />
               <span>Clear History</span>
@@ -510,11 +514,11 @@ function VoiceCoachContent() {
                   className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
                     m.role === "user"
                       ? "bg-blue-600 text-white rounded-br-xs"
-                      : "bg-slate-100 text-slate-800 rounded-bl-xs border border-slate-200/60"
+                      : "bg-slate-100 dark:bg-[#1B2E4B] text-slate-800 dark:text-slate-200 rounded-bl-xs border border-slate-200/60 dark:border-[#223854]"
                   }`}
                 >
                   {m.role === "coach" && (
-                    <div className="flex items-center gap-1 text-[11px] font-semibold text-blue-700 mb-1">
+                    <div className="flex items-center gap-1 text-[11px] font-semibold text-blue-700 dark:text-blue-400 mb-1">
                       <Bot className="w-3 h-3" />
                       <span>Coach</span>
                     </div>

@@ -1,15 +1,16 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect, useState } from "react";
 
 const SessionContext = createContext();
 
 export function SessionProvider({ children }) {
   const [sessions, setSessions] = useState(() => {
-    // 🔑 LOAD from localStorage on refresh
+    // Load from localStorage on refresh
     const stored = localStorage.getItem("sessions");
     return stored ? JSON.parse(stored) : [];
   });
 
-  // 🔁 SAVE to localStorage whenever sessions change
+  // Persist to localStorage whenever sessions change
   useEffect(() => {
     localStorage.setItem("sessions", JSON.stringify(sessions));
   }, [sessions]);

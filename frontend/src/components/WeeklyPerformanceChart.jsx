@@ -1,4 +1,5 @@
 import { useSession } from "../context/SessionContext";
+import { useTheme } from "../context/ThemeContext";
 import { Link } from "react-router-dom";
 import { TrendingUp, BarChart2, Plus } from "lucide-react";
 import {
@@ -11,13 +12,15 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-function CustomTooltip({ active, payload, label }) {
+function CustomTooltip({ active, payload }) {
   if (active && payload && payload.length) {
+    const data = payload[0].payload;
     return (
-      <div className="bg-slate-900 border border-slate-800 text-white px-3 py-2 rounded-lg shadow-lg text-xs">
-        <p className="font-semibold text-slate-300">{label}</p>
-        <p className="text-sm font-bold text-blue-400 mt-0.5">
-          Score: {payload[0].value} <span className="text-slate-400 font-normal">/ 100</span>
+      <div className="bg-slate-900 dark:bg-[#1B2E4B] border border-slate-800 dark:border-[#223854] text-white px-3.5 py-2.5 rounded-lg shadow-lg text-xs">
+        <p className="font-semibold text-slate-200">Session {data.sessionNumber}</p>
+        <p className="text-[11px] text-slate-400 mt-0.5">{data.fullDate}</p>
+        <p className="text-sm font-bold text-blue-400 mt-1">
+          Overall Score: {payload[0].value} <span className="text-slate-400 font-normal">/ 100</span>
         </p>
       </div>
     );
@@ -27,49 +30,58 @@ function CustomTooltip({ active, payload, label }) {
 
 function WeeklyPerformanceChart() {
   const { sessions } = useSession();
+  const { isDark } = useTheme();
 
   const hasData = Array.isArray(sessions) && sessions.length > 0;
 
   const chartData = hasData
-    ? sessions.map((s, index) => ({
-        day: s.date || `Session ${index + 1}`,
-        performance: typeof s.overall_score === "number" ? s.overall_score : 0,
-      }))
+    ? sessions.map((s, index) => {
+        const fullDateStr = s.date
+          ? `${s.date}${s.time ? ` at ${s.time}` : ""}`
+          : `Session ${index + 1}`;
+
+        return {
+          day: `S${index + 1}`,
+          fullDate: fullDateStr,
+          sessionNumber: index + 1,
+          performance: typeof s.overall_score === "number" ? s.overall_score : 0,
+        };
+      })
     : [];
 
   return (
-    <div className="bg-white border border-slate-200/90 rounded-xl p-6 shadow-xs">
+    <div className="bg-white dark:bg-[#132238] border border-slate-200/90 dark:border-[#223854] rounded-xl p-6 shadow-xs transition-colors">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-6">
         <div>
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-md bg-blue-50 flex items-center justify-center text-blue-600">
+            <div className="w-7 h-7 rounded-md bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-600 dark:text-blue-400">
               <TrendingUp className="w-4 h-4" />
             </div>
-            <h2 className="text-base font-bold text-slate-900 tracking-tight m-0">
+            <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-tight m-0">
               Performance Progression
             </h2>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Historical overall score trajectory across recorded training sessions
           </p>
         </div>
 
         {hasData && (
-          <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md self-start sm:self-auto">
+          <span className="text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-[#1B2E4B] border border-transparent dark:border-[#223854] px-2.5 py-1 rounded-md self-start sm:self-auto font-mono">
             Scale: 0 – 100
           </span>
         )}
       </div>
 
       {!hasData ? (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50/70 p-8 text-center flex flex-col items-center justify-center min-h-[260px]">
-          <div className="w-10 h-10 rounded-full bg-slate-200/60 flex items-center justify-center text-slate-400 mb-3">
+        <div className="rounded-xl border border-dashed border-slate-300 dark:border-[#223854] bg-slate-50/70 dark:bg-[#1B2E4B]/40 p-8 text-center flex flex-col items-center justify-center min-h-[260px]">
+          <div className="w-10 h-10 rounded-full bg-slate-200/60 dark:bg-[#162842] flex items-center justify-center text-slate-400 dark:text-slate-500 mb-3">
             <BarChart2 className="w-5 h-5" />
           </div>
-          <h3 className="text-sm font-semibold text-slate-800 m-0">
+          <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 m-0">
             No Session Data Recorded Yet
           </h3>
-          <p className="text-xs text-slate-500 max-w-sm mt-1 mb-4">
+          <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mt-1 mb-4">
             Evaluate your first training session to begin visualizing workload, fatigue, and recovery patterns.
           </p>
           <Link
@@ -84,17 +96,22 @@ function WeeklyPerformanceChart() {
         <div className="w-full h-72">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <CartesianGrid stroke="#f1f5f9" strokeDasharray="3 3" vertical={false} />
+              <CartesianGrid
+                stroke={isDark ? "#1E2E42" : "#f1f5f9"}
+                strokeDasharray="3 3"
+                vertical={false}
+              />
               <XAxis
                 dataKey="day"
-                stroke="#94a3b8"
-                fontSize={12}
+                stroke={isDark ? "#64748b" : "#94a3b8"}
+                fontSize={11}
                 tickLine={false}
-                axisLine={{ stroke: "#e2e8f0" }}
+                axisLine={{ stroke: isDark ? "#223854" : "#e2e8f0" }}
+                interval={chartData.length > 15 ? Math.floor(chartData.length / 10) : 0}
               />
               <YAxis
                 domain={[0, 100]}
-                stroke="#94a3b8"
+                stroke={isDark ? "#64748b" : "#94a3b8"}
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
@@ -104,10 +121,20 @@ function WeeklyPerformanceChart() {
               <Line
                 type="monotone"
                 dataKey="performance"
-                stroke="#2563eb"
+                stroke={isDark ? "#3b82f6" : "#2563eb"}
                 strokeWidth={2.5}
-                dot={{ r: 4, fill: "#2563eb", stroke: "#ffffff", strokeWidth: 2 }}
-                activeDot={{ r: 6, fill: "#1d4ed8", stroke: "#ffffff", strokeWidth: 2 }}
+                dot={chartData.length > 15 ? false : {
+                  r: 4,
+                  fill: isDark ? "#3b82f6" : "#2563eb",
+                  stroke: isDark ? "#132238" : "#ffffff",
+                  strokeWidth: 2,
+                }}
+                activeDot={{
+                  r: 6,
+                  fill: isDark ? "#60a5fa" : "#1d4ed8",
+                  stroke: isDark ? "#132238" : "#ffffff",
+                  strokeWidth: 2,
+                }}
               />
             </LineChart>
           </ResponsiveContainer>

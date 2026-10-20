@@ -1,29 +1,68 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  /* Professional Navy & Blue Palette */
+  /* AthleteX Light Theme Tokens */
   --bg-main: #f8fafc;
   --bg-card: #ffffff;
-  --bg-dark: #0f172a;
+  --bg-card-hover: #f8fafc;
+  --bg-surface-subtle: #f1f5f9;
+  --bg-nav: #0d1b2a;
+  --bg-input: #ffffff;
 
-  --primary: #2563eb;       /* Royal Blue */
+  --primary-navy: #0d1b2a;
+  --primary-blue: #1e40af;
+  --accent-blue: #3b82f6;
+
+  --primary: #1e40af;
   --primary-hover: #1d4ed8;
-  --secondary: #0284c7;     /* Tech Cyan / Sky */
-  --accent: #059669;        /* Non-neon Emerald */
-  --warning: #d97706;       /* Amber */
-  --danger: #dc2626;        /* High-contrast Red */
+  --accent: #059669;
+  --warning: #d97706;
+  --danger: #dc2626;
 
-  /* Typography & Structure */
-  --text-main: #0f172a;     /* Slate 900 */
-  --text-muted: #64748b;    /* Slate 500 */
-  --border: #e2e8f0;        /* Slate 200 */
-  --input-bg: #ffffff;
-  --card-alt: #f1f5f9;      /* Slate 100 */
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --text-subtle: #94a3b8;
+  --border: #e2e8f0;
+  --border-subtle: #f1f5f9;
+  --border-hover: #cbd5e1;
+  --card-alt: #f1f5f9;
 
-  /* UI Tokens - Zero Glow, Crisp Geometry */
   --radius: 12px;
   --shadow-soft: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.04);
   --shadow-hover: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+}
+
+.dark {
+  /* AthleteX Dark Navy Theme Tokens */
+  --bg-main: #0d1b2a;
+  --bg-card: #132238;
+  --bg-card-hover: #162842;
+  --bg-surface-subtle: #1b2e4b;
+  --bg-nav: #09131d;
+  --bg-input: #1b2e4b;
+
+  --primary-navy: #0d1b2a;
+  --primary-blue: #2563eb;
+  --accent-blue: #60a5fa;
+
+  --primary: #2563eb;
+  --primary-hover: #3b82f6;
+  --accent: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-subtle: #64748b;
+  --border: #223854;
+  --border-subtle: #192d47;
+  --border-hover: #334d70;
+  --card-alt: #162842;
+
+  --shadow-soft: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.2);
+  --shadow-hover: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
 }
 
 /* Base Body Styling */
@@ -34,9 +73,44 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   margin: 0;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  /* Subtle radial gradient for light mode depth */
+  background-image: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(59, 130, 246, 0.04) 0%, transparent 60%);
 }
 
-/* Compatibility Classes for Pages (Clean, Crisp, Professional) */
+.dark body {
+  background-image: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(59, 130, 246, 0.07) 0%, transparent 60%);
+}
+
+/* Fade-in entry animation for result sections */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in-up 0.35s ease-out both;
+}
+
+/* Staggered card entry */
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Shared & Compatibility Classes */
 .page-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -50,7 +124,7 @@ body {
 .page-title {
   font-size: 28px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text-main);
   letter-spacing: -0.02em;
 }
 
@@ -64,18 +138,19 @@ body {
   margin-bottom: 32px;
 }
 
-/* Base Card - Crisp border, no glowing shadow */
+/* Base Card - Crisp border, theme-aware */
 .card {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 24px;
   box-shadow: var(--shadow-soft);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  color: var(--text-main);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.15s ease;
 }
 
 .card:hover {
-  border-color: #cbd5e1;
+  border-color: var(--border-hover);
   box-shadow: var(--shadow-hover);
 }
 
@@ -91,12 +166,13 @@ body {
   border-radius: var(--radius);
   padding: 20px 24px;
   box-shadow: var(--shadow-soft);
+  color: var(--text-main);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .action-card:hover {
-  border-color: #93c5fd;
+  border-color: var(--accent-blue);
   box-shadow: var(--shadow-hover);
 }
 
@@ -112,12 +188,13 @@ body {
   background: var(--bg-card);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-soft);
+  color: var(--text-main);
 }
 
 .stat-value {
   font-size: 32px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text-main);
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
 }
@@ -128,7 +205,7 @@ body {
   gap: 8px;
   font-size: 16px;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--text-main);
   margin-bottom: 12px;
 }
 
@@ -157,13 +234,13 @@ body {
 
 .chat-user {
   align-self: flex-end;
-  background-color: #2563eb;
+  background-color: var(--primary);
   color: #ffffff;
 }
 
 .chat-coach {
   align-self: flex-start;
-  background-color: #f1f5f9;
-  color: #0f172a;
-  border: 1px solid #e2e8f0;
+  background-color: var(--card-alt);
+  color: var(--text-main);
+  border: 1px solid var(--border);
 }

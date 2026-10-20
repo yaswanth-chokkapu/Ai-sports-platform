@@ -92,7 +92,7 @@ function Performance() {
      ========================= */
   return (
     <div style={{ padding: "20px", maxWidth: "900px", margin: "auto" }}>
-      <h2>🏋️ Sports Performance Analytics</h2>
+      <h2>Sports Performance Analytics</h2>
 
       {/* INPUT CONTROLS */}
       <label>Training Load: {trainingLoad}</label>
@@ -135,19 +135,19 @@ function Performance() {
       {/* PERFORMANCE CARD */}
       {performance && (
         <div style={cardStyle(getPerformanceColor(performance.overall_score))}>
-          <h3>📊 Overall Performance</h3>
+          <h3>Overall Performance</h3>
           <h2>{performance.overall_score} / 100</h2>
-          <p>💪 Strength: {performance.metrics.strength}</p>
-          <p>🏃 Endurance: {performance.metrics.endurance}</p>
-          <p>🔄 Recovery: {performance.metrics.recovery}</p>
-          <p>🔥 Fatigue: {performance.metrics.fatigue}</p>
+          <p>Strength: {performance.metrics.strength}</p>
+          <p>Endurance: {performance.metrics.endurance}</p>
+          <p>Recovery: {performance.metrics.recovery}</p>
+          <p>Fatigue: {performance.metrics.fatigue}</p>
         </div>
       )}
 
       {/* INJURY CARD */}
       {injuryRisk && (
         <div style={cardStyle(getInjuryColor(injuryRisk.risk_level))}>
-          <h3>🚑 Injury Risk</h3>
+          <h3>Injury Risk</h3>
           <h2>{injuryRisk.risk_level}</h2>
           <p>Confidence: {injuryRisk.confidence}%</p>
         </div>
@@ -160,7 +160,7 @@ function Performance() {
       {/* FATIGUE SUMMARY */}
       {fatigue && (
         <div style={cardStyle(getFatigueColor(fatigue.average_fatigue))}>
-          <h3>📈 Avg Fatigue (Last 7 Sessions)</h3>
+          <h3>Avg Fatigue (Last 7 Sessions)</h3>
           <h2>{fatigue.average_fatigue}</h2>
         </div>
       )}
@@ -168,7 +168,7 @@ function Performance() {
       {/* SUGGESTIONS */}
       {suggestions.length > 0 && (
         <div style={cardStyle("#3b82f6")}>
-          <h3>💡 Coach Suggestions</h3>
+          <h3>Coach Suggestions</h3>
           <ul>
             {suggestions.map((s, i) => (
               <li key={i}>{s}</li>
@@ -176,7 +176,7 @@ function Performance() {
           </ul>
         </div>
       )}
-      {/* 🔊 AI VOICE COACH — MUST BE HERE */}
+      {/* AI VOICE COACH */}
       {performance && (
         <VoiceCoach
           sessionData={{

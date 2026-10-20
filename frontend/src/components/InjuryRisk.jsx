@@ -25,7 +25,7 @@ function InjuryRisk() {
 
   return (
     <div style={{ marginTop: "40px" }}>
-      <h2>🚑 Injury Risk Prediction</h2>
+      <h2>Injury Risk Prediction</h2>
 
       <label>Training Load: {trainingLoad}</label>
       <input type="range" min="0" max="100" value={trainingLoad} onChange={(e) => setTrainingLoad(+e.target.value)} />

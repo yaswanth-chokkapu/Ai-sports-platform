@@ -12,7 +12,7 @@ class InjuryRiskModel:
 
     def load(self):
         self.model = joblib.load(MODEL_PATH)
-        print("✅ Injury ML model loaded successfully")
+        print("[INFO] Injury ML model loaded successfully")
 
     def predict(self, features):
         return self.model.predict(features)[0]
